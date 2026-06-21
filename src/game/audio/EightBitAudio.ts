@@ -46,7 +46,7 @@ export class EightBitAudio {
     if (!this.context) {
       this.context = new AudioContextClass();
       this.master = this.context.createGain();
-      this.master.gain.value = 0.18;
+      this.master.gain.value = shouldUseUploadedSounds() ? 0.18 : 0.46;
       this.master.connect(this.context.destination);
     }
 
@@ -94,7 +94,7 @@ export class EightBitAudio {
       return;
     }
 
-    this.playSweep(330, 620, 0.11, 0.09);
+    this.playSweep(330, 620, 0.12, 0.2);
   }
 
   playCoin(): void {
@@ -102,8 +102,8 @@ export class EightBitAudio {
       return;
     }
 
-    this.playTone(880, 0.06, 0.12);
-    window.setTimeout(() => this.playTone(1320, 0.08, 0.1), 55);
+    this.playTone(880, 0.06, 0.22);
+    window.setTimeout(() => this.playTone(1320, 0.08, 0.2), 55);
   }
 
   playPower(): void {
@@ -112,7 +112,7 @@ export class EightBitAudio {
     }
 
     [523, 659, 784, 1046].forEach((freq, index) => {
-      window.setTimeout(() => this.playTone(freq, 0.09, 0.11), index * 70);
+      window.setTimeout(() => this.playTone(freq, 0.09, 0.19), index * 70);
     });
   }
 
@@ -121,7 +121,7 @@ export class EightBitAudio {
       return;
     }
 
-    this.playSweep(420, 110, 0.35, 0.13);
+    this.playSweep(420, 110, 0.35, 0.22);
   }
 
   playHit(): void {
@@ -129,7 +129,7 @@ export class EightBitAudio {
       return;
     }
 
-    this.playSweep(180, 90, 0.16, 0.12);
+    this.playSweep(180, 90, 0.16, 0.2);
   }
 
   playClear(): void {
@@ -139,7 +139,7 @@ export class EightBitAudio {
     }
 
     [523, 659, 784, 1046, 1318].forEach((freq, index) => {
-      window.setTimeout(() => this.playTone(freq, 0.16, 0.14), index * 130);
+      window.setTimeout(() => this.playTone(freq, 0.16, 0.24), index * 130);
     });
   }
 
@@ -178,10 +178,10 @@ export class EightBitAudio {
     const bass = this.theme === "surface" ? [98, 123, 147, 165] : [73, 87, 98, 110];
     const note = notes[this.step % notes.length];
 
-    this.playTone(note, 0.09, 0.045);
+    this.playTone(note, 0.13, 0.16);
 
     if (this.step % 2 === 0) {
-      this.playTone(bass[Math.floor(this.step / 2) % bass.length], 0.13, 0.035);
+      this.playTone(bass[Math.floor(this.step / 2) % bass.length], 0.16, 0.1);
     }
 
     this.step += 1;
