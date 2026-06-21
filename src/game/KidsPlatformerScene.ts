@@ -63,6 +63,8 @@ export class KidsPlatformerScene extends Phaser.Scene {
   private flagZone?: Phaser.GameObjects.Zone;
   private hudText!: Phaser.GameObjects.Text;
   private helperText!: Phaser.GameObjects.Text;
+  private volumeButton?: Phaser.GameObjects.Rectangle;
+  private volumeLabel?: Phaser.GameObjects.Text;
   private startOverlay!: Phaser.GameObjects.Container;
   private startChoiceCards = new Map<KidCharacter, Phaser.GameObjects.Rectangle>();
   private startChoiceLabels = new Map<KidCharacter, Phaser.GameObjects.Text>();
@@ -625,6 +627,50 @@ export class KidsPlatformerScene extends Phaser.Scene {
       stroke: "#1f2937",
       strokeThickness: 4
     }).setOrigin(0.5).setScrollFactor(0).setDepth(80);
+
+    const toggleAudio = (
+      _pointer: Phaser.Input.Pointer,
+      _localX: number,
+      _localY: number,
+      event: Phaser.Types.Input.EventData
+    ) => {
+      event.stopPropagation();
+      this.toggleAudioMuted();
+    };
+
+    this.volumeButton = this.add.rectangle(GAME_SIZE.width - 74, 30, 128, 38, 0x111827, 0.74)
+      .setScrollFactor(0)
+      .setDepth(140)
+      .setStrokeStyle(2, 0xffffff, 0.65)
+      .setInteractive({ useHandCursor: true });
+    this.volumeButton.on("pointerdown", toggleAudio);
+
+    this.volumeLabel = this.add.text(GAME_SIZE.width - 74, 30, "", {
+      fontFamily: "Arial",
+      fontSize: "17px",
+      color: "#ffffff",
+      fontStyle: "bold"
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(141).setInteractive({ useHandCursor: true });
+    this.volumeLabel.on("pointerdown", toggleAudio);
+    this.updateVolumeButton();
+  }
+
+  private toggleAudioMuted(): void {
+    this.audio.setMuted(!this.audio.isMuted());
+    this.updateVolumeButton();
+    this.publishDebugState();
+  }
+
+  private updateVolumeButton(): void {
+    if (!this.volumeButton || !this.volumeLabel) {
+      return;
+    }
+
+    const muted = this.audio.isMuted();
+    this.volumeButton
+      .setFillStyle(muted ? 0x4b5563 : 0x111827, muted ? 0.9 : 0.74)
+      .setStrokeStyle(2, muted ? 0xfacc15 : 0xffffff, muted ? 0.95 : 0.65);
+    this.volumeLabel.setText(muted ? "VOL OFF" : "VOL ON");
   }
 
   private updateHud(time: number): void {
@@ -843,6 +889,7 @@ export class KidsPlatformerScene extends Phaser.Scene {
       playerForm: this.playerForm,
       activeKid: this.activeKid,
       playerScale: PLAYER_SCALE[this.playerForm],
+      audioMuted: this.audio.isMuted(),
       playerX: Math.round(this.player?.x ?? 0),
       hasPipe: this.stage.hasPipe
     };
@@ -1100,6 +1147,7 @@ declare global {
       playerForm: string;
       activeKid: string;
       playerScale: number;
+      audioMuted: boolean;
       playerX: number;
       hasPipe: boolean;
     };

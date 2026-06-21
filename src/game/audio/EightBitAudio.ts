@@ -17,9 +17,34 @@ const SOUND_FILES = {
 
 type SoundKey = keyof typeof SOUND_FILES;
 
+const isPrivateNetworkHost = (hostname: string): boolean => {
+  const host = hostname.toLowerCase();
+
+  if (host.endsWith(".local")) {
+    return true;
+  }
+
+  if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)) {
+    return true;
+  }
+
+  if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(host)) {
+    return true;
+  }
+
+  const private172Match = host.match(/^172\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/);
+  if (!private172Match) {
+    return false;
+  }
+
+  const secondOctet = Number(private172Match[1]);
+  return secondOctet >= 16 && secondOctet <= 31;
+};
+
 const shouldUseUploadedSounds = (): boolean =>
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1" ||
+  isPrivateNetworkHost(window.location.hostname) ||
   window.location.protocol === "file:";
 
 export class EightBitAudio {
@@ -29,8 +54,30 @@ export class EightBitAudio {
   private step = 0;
   private theme: MusicTheme = "surface";
   private enabled = false;
+  private muted = false;
   private assets = new Map<SoundKey, HTMLAudioElement>();
   private currentMusic?: HTMLAudioElement;
+
+  isMuted(): boolean {
+    return this.muted;
+  }
+
+  setMuted(muted: boolean): void {
+    if (this.muted === muted) {
+      return;
+    }
+
+    this.muted = muted;
+
+    if (this.muted) {
+      this.stopMusic();
+      return;
+    }
+
+    if (this.enabled) {
+      this.startMusic(this.theme);
+    }
+  }
 
   async start(theme: MusicTheme): Promise<void> {
     if (shouldUseUploadedSounds()) {
@@ -63,6 +110,10 @@ export class EightBitAudio {
     this.stopMusic();
     this.step = 0;
 
+    if (this.muted) {
+      return;
+    }
+
     const music = this.assets.get(theme === "surface" ? "surfaceMusic" : "undergroundMusic");
     if (music) {
       this.currentMusic = music;
@@ -90,6 +141,10 @@ export class EightBitAudio {
   }
 
   playJump(): void {
+    if (this.muted) {
+      return;
+    }
+
     if (this.playAsset("jump", 0.42)) {
       return;
     }
@@ -98,6 +153,10 @@ export class EightBitAudio {
   }
 
   playCoin(): void {
+    if (this.muted) {
+      return;
+    }
+
     if (this.playAsset("coin", 0.45)) {
       return;
     }
@@ -107,6 +166,10 @@ export class EightBitAudio {
   }
 
   playPower(): void {
+    if (this.muted) {
+      return;
+    }
+
     if (this.playAsset("power", 0.48)) {
       return;
     }
@@ -117,6 +180,10 @@ export class EightBitAudio {
   }
 
   playPipe(): void {
+    if (this.muted) {
+      return;
+    }
+
     if (this.playAsset("pipe", 0.48)) {
       return;
     }
@@ -125,6 +192,10 @@ export class EightBitAudio {
   }
 
   playHit(): void {
+    if (this.muted) {
+      return;
+    }
+
     if (this.playAsset("gameOver", 0.34)) {
       return;
     }
@@ -134,6 +205,10 @@ export class EightBitAudio {
 
   playClear(): void {
     this.stopMusic();
+    if (this.muted) {
+      return;
+    }
+
     if (this.playAsset("clear", 0.44)) {
       return;
     }
