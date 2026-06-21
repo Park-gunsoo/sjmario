@@ -131,6 +131,31 @@ export class KidsPlatformerScene extends Phaser.Scene {
     this.publishDebugState();
   }
 
+  private requestFullscreen(): void {
+    const target = this.game.canvas as HTMLCanvasElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+      msRequestFullscreen?: () => Promise<void> | void;
+    };
+    const documentElement = document.documentElement as HTMLElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+      msRequestFullscreen?: () => Promise<void> | void;
+    };
+
+    if (document.fullscreenElement) {
+      return;
+    }
+
+    const request =
+      target.requestFullscreen?.bind(target) ??
+      target.webkitRequestFullscreen?.bind(target) ??
+      target.msRequestFullscreen?.bind(target) ??
+      documentElement.requestFullscreen?.bind(documentElement) ??
+      documentElement.webkitRequestFullscreen?.bind(documentElement) ??
+      documentElement.msRequestFullscreen?.bind(documentElement);
+
+    void request?.();
+  }
+
   private buildStage(): void {
     this.clearStageObjects();
     this.stage = STAGES[this.stageIndex];
@@ -632,10 +657,20 @@ export class KidsPlatformerScene extends Phaser.Scene {
     const seojunChoice = this.createKidChoice("seojun", 350, 275, "서준");
     const seojinChoice = this.createKidChoice("seojin", 610, 275, "서진");
 
-    const startButton = this.add.rectangle(480, 462, 230, 54, 0x2563eb, 1)
+    const startButton = this.add.rectangle(390, 462, 210, 54, 0x2563eb, 1)
       .setScrollFactor(0)
       .setInteractive({ useHandCursor: true });
-    const startLabel = this.add.text(480, 462, "게임 시작", {
+    const startLabel = this.add.text(390, 462, "게임 시작", {
+      fontFamily: "Arial",
+      fontSize: "24px",
+      color: "#ffffff",
+      fontStyle: "bold"
+    }).setOrigin(0.5).setScrollFactor(0).setInteractive({ useHandCursor: true });
+
+    const fullscreenButton = this.add.rectangle(610, 462, 190, 54, 0x0f766e, 1)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true });
+    const fullscreenLabel = this.add.text(610, 462, "전체화면", {
       fontFamily: "Arial",
       fontSize: "24px",
       color: "#ffffff",
@@ -654,6 +689,18 @@ export class KidsPlatformerScene extends Phaser.Scene {
     startButton.on("pointerdown", startAction);
     startLabel.on("pointerdown", startAction);
 
+    const fullscreenAction = (
+      _pointer: Phaser.Input.Pointer,
+      _localX: number,
+      _localY: number,
+      event: Phaser.Types.Input.EventData
+    ) => {
+      event.stopPropagation();
+      this.requestFullscreen();
+    };
+    fullscreenButton.on("pointerdown", fullscreenAction);
+    fullscreenLabel.on("pointerdown", fullscreenAction);
+
     const note = this.add.text(480, 508, "1: 서준 / 2: 서진 선택 · Space/Enter 시작 · 파이프 위에서는 ↓", {
       fontFamily: "Arial",
       fontSize: "18px",
@@ -668,6 +715,8 @@ export class KidsPlatformerScene extends Phaser.Scene {
       ...seojinChoice,
       startButton,
       startLabel,
+      fullscreenButton,
+      fullscreenLabel,
       note
     ]).setDepth(120);
     this.updateStartChoiceState();
@@ -720,7 +769,8 @@ export class KidsPlatformerScene extends Phaser.Scene {
 
     const seojunCard = new Phaser.Geom.Rectangle(255, 150, 190, 250);
     const seojinCard = new Phaser.Geom.Rectangle(515, 150, 190, 250);
-    const startButton = new Phaser.Geom.Rectangle(365, 435, 230, 54);
+    const startButton = new Phaser.Geom.Rectangle(285, 435, 210, 54);
+    const fullscreenButton = new Phaser.Geom.Rectangle(515, 435, 190, 54);
 
     if (Phaser.Geom.Rectangle.Contains(seojunCard, pointer.x, pointer.y)) {
       this.setActiveKid("seojun");
@@ -734,6 +784,11 @@ export class KidsPlatformerScene extends Phaser.Scene {
 
     if (Phaser.Geom.Rectangle.Contains(startButton, pointer.x, pointer.y)) {
       this.startGame();
+      return;
+    }
+
+    if (Phaser.Geom.Rectangle.Contains(fullscreenButton, pointer.x, pointer.y)) {
+      this.requestFullscreen();
     }
   }
 

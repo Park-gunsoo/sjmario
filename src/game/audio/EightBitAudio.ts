@@ -7,12 +7,12 @@ const SOUND_PATH = `${import.meta.env.BASE_URL}assets/sound/`;
 const SOUND_FILES = {
   surfaceMusic: "01. Ground Theme.mp3",
   undergroundMusic: "02. Underground Theme.mp3",
-  gameOver: "09. Game Over.mp3",
-  clear: "12. Level Clear.mp3",
-  coin: "smb_coin.wav",
-  jump: "smb_jump-super.wav",
-  pipe: "smb_pipe.wav",
-  power: "super_mario_bros_mushroom_sound_effect_58k.mp3"
+  gameOver: "Game Over.mp3",
+  clear: "Clear.mp3",
+  coin: "coin.wav",
+  jump: "jump-super.wav",
+  pipe: "pipe.wav",
+  power: "mushroom_sound_effect.mp3"
 } as const;
 
 type SoundKey = keyof typeof SOUND_FILES;
